@@ -1,31 +1,90 @@
 const displayController = (() => {
+    const buttons = document.querySelectorAll(".btn");
+    const winnerText = document.querySelector(".winner-text");
+    const resetButton = document.querySelector(".reset-btn");
+    
+    const init = () => {
+        buttons.forEach((btn) => {
+            btn.addEventListener('click', game.playRound(btn));
+        });
+        resetButton.addEventListener('click', () => {
+            reset();
+            gameBoard.reset();
+            game.reset();
+            winnerText.textContent = "Game Ongoing";
+        })
+    }
 
+    const reset = () => {
+        buttons.forEach((btn) => {btn.textContent = ''});
+    }
+
+    const setButtonText = (buttonNr, char) => {
+        buttons[buttonNr].textContent = char;
+    }
+    
+    const setWinnerText = (char) => {
+        winnerText.textContent = `${winner} has won the game!`;
+    }
+    
+    return { 
+        initialize: () => init(),
+        reset: () => reset(),
+        setButtonTxt: (btnNr, char) => setButtonText(btnNr, char),
+        setWinnerTxt: (char) => setWinnerText(char)
+    }
 })();
 
 const game = (() => {
     const players = [createPlayer("X"), createPlayer("O")];
+    let currentPlayer = 0;
+    let onGoing = true;
 
-    function init() {
-        const btns = document.querySelectorAll('button');
-        
-        btns.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                
-            })
-        })
+    const checkPosition = (btn) => {
+        if (!onGoing) { return }; 
+        row = parseInt(btn.parentElement.className[3]);
+        column = parseInt(btn.classList[1]);
+        if (gameBoard.addToBoard(column - 1, row - 1, players[currentPlayer].char)) {
+            playRound((row * column) - 1);
+        }
     }
 
-    return { init }
+    const playRound = (btnNr) => {
+        displayController.setButtonTxt(btnNr, players[currentPlayer].char);
+        winner = gameBoard.checkForWin();
+        if (winner != 0) {
+            displayController.setWinnerTxt(winner);
+            onGoing = false;
+        }
+        currentPlayer = (currentPlayer + 1) % 2;
+    }
+
+    const reset = () => {
+        onGoing = true;
+        currentPlayer = 0;
+    }
+
+    return { 
+        playRound: (btn) => checkPosition(btn),
+        reset: () => reset()
+    }
 })();
 
 const gameBoard = (() => {
     const board = [['', '', ''],['', '', ''],['', '', '']];
     
+    const reset = () => {
+        for(let i = 0; i < 3; i++) {
+            board[i] = ['', '', ''];
+        };
+    }
+
     const addBoardPosition = (x, y, char) => {
         if (board[x][y] === '') {
             board[x][y] = char;
+            return true;
         } else {
-            return 1;
+            return false;
         }
     }
 
@@ -57,11 +116,13 @@ const gameBoard = (() => {
             return diagonals[1][0];
         }
 
+        return 0;
     }
 
     return {
         addToBoard: (x, y, char) => addBoardPosition(x, y, char),
-        checkForWin: () => checkWinCondition()
+        checkForWin: () => checkWinCondition(),
+        reset: () => reset()
     }
 })();
 
@@ -71,4 +132,4 @@ function createPlayer (character) {
     return { char }
 }
 
-game.init();
+displayController.initialize();
