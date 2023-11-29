@@ -42,7 +42,7 @@ const game = (() => {
 
     const checkPosition = (btn) => {
         if (!onGoing) { return }; 
-        row = parseInt(btn.parentElement.className[3]);
+        row = parseInt(btn.parentElement.classList[1]);
         column = parseInt(btn.classList[1]);
         if (gameBoard.addToBoard(row, column, players[currentPlayer].char)) {
             playRound((row * 3) + column);
