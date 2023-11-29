@@ -5,7 +5,7 @@ const displayController = (() => {
     
     const init = () => {
         buttons.forEach((btn) => {
-            btn.addEventListener('click', game.playRound(btn));
+            btn.addEventListener('click', () => game.playRound(btn));
         });
         resetButton.addEventListener('click', () => {
             reset();
@@ -44,8 +44,8 @@ const game = (() => {
         if (!onGoing) { return }; 
         row = parseInt(btn.parentElement.className[3]);
         column = parseInt(btn.classList[1]);
-        if (gameBoard.addToBoard(column - 1, row - 1, players[currentPlayer].char)) {
-            playRound((row * column) - 1);
+        if (gameBoard.addToBoard(row, column, players[currentPlayer].char)) {
+            playRound((row * 3) + column);
         }
     }
 
@@ -53,6 +53,7 @@ const game = (() => {
         displayController.setButtonTxt(btnNr, players[currentPlayer].char);
         winner = gameBoard.checkForWin();
         if (winner != 0) {
+            if (winner === "draw") { winner = "No one"; }
             displayController.setWinnerTxt(winner);
             onGoing = false;
         }
@@ -80,8 +81,8 @@ const gameBoard = (() => {
     }
 
     const addBoardPosition = (x, y, char) => {
-        if (board[x][y] === '') {
-            board[x][y] = char;
+        if (board[y][x] === '') {
+            board[y][x] = char;
             return true;
         } else {
             return false;
@@ -114,6 +115,10 @@ const gameBoard = (() => {
         }
         if (diagonals[1].every(val => val === diagonals[1][0]) && diagonals[1][0] != '') {
             return diagonals[1][0];
+        }
+
+        if (board.every(val => val.every(value => value != ''))) {
+            return "draw";
         }
 
         return 0;
